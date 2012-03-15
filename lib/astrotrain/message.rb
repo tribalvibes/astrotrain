@@ -299,16 +299,20 @@ module Astrotrain
     # s - unconverted String in the wrong character set
     #
     # Returns converted String.
+    def iconvert_to_utf8(s)
+      Iconv.iconv("UTF-8//IGNORE", @mail.charset || "UTF-8", s).join("")
+    end
+
     if Object.const_defined?(:Encoding)
       Encoding.default_internal = "utf-8"
       def convert_to_utf8(s)
         s.force_encoding(@mail.charset) if @mail.charset
         s.encode!(Encoding.default_internal)
+      rescue
+        iconvert_to_utf8(s)
       end
     else
-      def convert_to_utf8(s)
-        Iconv.iconv("UTF-8//IGNORE", @mail.charset || "UTF-8", s).join("")
-      end
+      alias_method :convert_to_utf8, :iconvert_to_utf8
     end
   end
 end
